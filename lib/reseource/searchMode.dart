@@ -1,0 +1,4 @@
+enum Searchmode {
+  normal,
+  addMovie
+}
