@@ -23,7 +23,7 @@ class ListScreen extends StatefulWidget {
 }
 
 class ListScreenState extends State<ListScreen> {
-  late List<Movie> _movies;
+ 
   late List<MovieList> _userCreatedLists = [];
 
   Searchmode searchMode = Searchmode.addMovie;
@@ -31,7 +31,7 @@ class ListScreenState extends State<ListScreen> {
   @override
   void initState() {
     super.initState();
-    _movies = widget.movieList.movies;
+    
     _loadUserCreatedLists();
   }
 

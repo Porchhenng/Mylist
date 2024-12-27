@@ -67,23 +67,27 @@ class _MovieListViewScreenState extends State<MovieListViewScreen> {
               : _buildGridList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-         
+          // Navigate to SearchScreen to add a movie
           final newMovie = await Navigator.push<Movie>(
             context,
             MaterialPageRoute(
               builder: (context) => SearchScreen(
                 searchMode: Searchmode.addMovie,
-
               ),
-
             ),
           );
 
-          if(newMovie != null){
-            widget.movieList.movies.add(newMovie);
+          if (newMovie != null) {
+            // Add the new movie to the current list
             setState(() {
-              
+              widget.movieList.movies.add(newMovie);
             });
+
+            // Update the local JSON file with the updated movie list
+            await _updateLocalData(widget.movieList);
+
+            // Notify the parent (if needed)
+            widget.onUpdate(widget.movieList);
           }
         },
         backgroundColor: Colors.green,
@@ -92,28 +96,29 @@ class _MovieListViewScreenState extends State<MovieListViewScreen> {
     );
   }
 
-  Future<void> _updateLocalData(MovieList updatedList) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/user_lists.json');
+Future<void> _updateLocalData(MovieList updatedList) async {
+  try {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/user_lists.json');
 
-      if (file.existsSync()) {
-        final data = json.decode(await file.readAsString());
+    if (file.existsSync()) {
+      final data = json.decode(await file.readAsString());
 
-        // Update the specific list in local storage
-        List<dynamic> updatedLists = (data as List<dynamic>).map((listJson) {
-          if (listJson['name'] == updatedList.name) {
-            return updatedList.toJson(); // Update the list
-          }
-          return listJson;
-        }).toList();
+      // Update the specific list in local storage
+      List<dynamic> updatedLists = (data as List<dynamic>).map((listJson) {
+        if (listJson['name'] == updatedList.name) {
+          return updatedList.toJson();
+        }
+        return listJson;
+      }).toList();
 
-        await file.writeAsString(json.encode(updatedLists));
-      }
-    } catch (e) {
-      print("Error updating local data: $e");
+      await file.writeAsString(json.encode(updatedLists));
     }
+  } catch (e) {
+    print("Error updating local data: $e");
   }
+}
+
 
   void _showEditTitleDialog() {
     String newTitle = widget.movieList.name ?? "";
@@ -187,7 +192,6 @@ class _MovieListViewScreenState extends State<MovieListViewScreen> {
             alignment: Alignment.centerRight,
             color: Colors.transparent,
             padding: const EdgeInsets.only(right: 20.0),
-           
           ),
           onDismissed: (direction) async {
             final removedMovie = widget.movieList.movies[index];
@@ -247,7 +251,6 @@ class _MovieListViewScreenState extends State<MovieListViewScreen> {
             alignment: Alignment.centerRight,
             color: Colors.transparent,
             padding: const EdgeInsets.only(right: 20.0),
-            
           ),
           onDismissed: (direction) async {
             // Remove the movie
@@ -284,34 +287,129 @@ class _MovieListViewScreenState extends State<MovieListViewScreen> {
     );
   }
 
- Widget _buildMovieCard(Movie movie) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MovieDetailsScreen(movie: movie),
+  Widget _buildMovieCard(Movie movie) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MovieDetailsScreen(movie: movie),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Card(
+          color: const Color(0xFF1F2C34),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: movie.posterPath.isNotEmpty
+                    ? Image.network(
+                        'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+                        width: 100,
+                        height: 150,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 100,
+                            height: 150,
+                            color: Colors.grey,
+                            child: const Icon(Icons.broken_image,
+                                color: Colors.white),
+                          );
+                        },
+                      )
+                    : Container(
+                        width: 100,
+                        height: 150,
+                        color: Colors.grey,
+                        child: const Icon(Icons.movie, color: Colors.white),
+                      ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Release Date: ${movie.releaseDate}",
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      movie.overview,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.yellow, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          movie.voteAverage.toString(),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      );
-    },
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
+      ),
+    );
+  }
+
+  Widget _buildMovieGridCard(Movie movie) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MovieDetailsScreen(movie: movie),
+          ),
+        );
+      },
       child: Card(
         color: const Color(0xFF1F2C34),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
               child: movie.posterPath.isNotEmpty
                   ? Image.network(
                       'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-                      width: 100,
+                      width: double.infinity,
                       height: 150,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          width: 100,
+                          width: double.infinity,
                           height: 150,
                           color: Colors.grey,
                           child: const Icon(Icons.broken_image,
@@ -320,136 +418,43 @@ class _MovieListViewScreenState extends State<MovieListViewScreen> {
                       },
                     )
                   : Container(
-                      width: 100,
+                      width: double.infinity,
                       height: 150,
                       color: Colors.grey,
                       child: const Icon(Icons.movie, color: Colors.white),
                     ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    movie.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Release Date: ${movie.releaseDate}",
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    movie.overview,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.yellow, size: 20),
-                      const SizedBox(width: 4),
-                      Text(
-                        movie.voteAverage.toString(),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                movie.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.star, color: Colors.yellow, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  movie.voteAverage.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
-    ),
-  );
-}
-
- Widget _buildMovieGridCard(Movie movie) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MovieDetailsScreen(movie: movie),
-        ),
-      );
-    },
-    child: Card(
-      color: const Color(0xFF1F2C34),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: movie.posterPath.isNotEmpty
-                ? Image.network(
-                    'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-                    width: double.infinity,
-                    height: 150,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: double.infinity,
-                        height: 150,
-                        color: Colors.grey,
-                        child:
-                            const Icon(Icons.broken_image, color: Colors.white),
-                      );
-                    },
-                  )
-                : Container(
-                    width: double.infinity,
-                    height: 150,
-                    color: Colors.grey,
-                    child: const Icon(Icons.movie, color: Colors.white),
-                  ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              movie.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.star, color: Colors.yellow, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                movie.voteAverage.toString(),
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    ),
-  );
-}
+    );
+  }
 }

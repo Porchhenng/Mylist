@@ -82,7 +82,7 @@ class _MyAppState extends State<MyApp> {
             flexibleSpace: Center(
               child: Image.asset(
                 'assets/logo.png',
-                height: 40,
+                height: 50,
                 fit: BoxFit.contain,
               ),
             ),

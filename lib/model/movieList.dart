@@ -1,7 +1,7 @@
 import 'package:molist/model/movie.dart';
 
 class MovieList {
- String? name; // For user-created lists
+  String? name; // For user-created lists
   final int? page; // Optional, for API-driven lists
   final List<Movie> movies;
   final String? description; // For user-created lists

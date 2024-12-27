@@ -77,9 +77,9 @@ Future<void> _fetchMovies() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
      appBar: AppBar(
-  backgroundColor: Colors.black,
+  backgroundColor: AppColors.background,
   title: null,  
   flexibleSpace: const Row(
     mainAxisAlignment: MainAxisAlignment.start,  // Title aligned to the right
@@ -87,7 +87,7 @@ Future<void> _fetchMovies() async {
       Padding(
         padding: const EdgeInsets.all(16.0),  // Add padding around the title
         child: Text(
-          'Popular Movies',
+          'Popular This Week',
           style: Font.headline3,
         ),
       ),

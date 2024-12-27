@@ -14,7 +14,7 @@ class MovieDetailsScreen extends StatefulWidget {
 }
 
 class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
-  final TMDbService _tmdbService = TMDbService(); // Instance of TMDbService
+
   List<Cast> _cast = [];
   bool _isLoadingCast = false;
   bool _hasMoreCast = true;

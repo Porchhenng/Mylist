@@ -67,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Search Movies', style: Font.headline3),
+        title: Text('', style: Font.headline3),
         backgroundColor: Colors.black,
       ),
       body: Padding(
@@ -147,7 +147,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     // Movie Poster
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(8),
-                                      child: movie.posterPath != null
+                                      child: movie.posterPath.isNotEmpty
                                           ? Image.network(
                                               'https://image.tmdb.org/t/p/w200${movie.posterPath}',
                                               width: 60,
@@ -162,20 +162,20 @@ class _SearchScreenState extends State<SearchScreen> {
                                                   color: Colors.white),
                                             ),
                                     ),
-                                    SizedBox(width: 16),
-                                    // Movie Details
+                                    const SizedBox(width: 16),
+                                  
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(movie.title ?? 'No Title',
+                                          Text(movie.title,
                                               style: Font.subtitle1),
-                                          SizedBox(height: 4),
+                                         const  SizedBox(height: 4),
                                           Text(
-                                              'Release Date: ${movie.releaseDate ?? 'N/A'}',
+                                              'Release Date: ${movie.releaseDate}',
                                               style: Font.subtitle2),
-                                          SizedBox(height: 4),
+                                         const SizedBox(height: 4),
                                           Text(
                                               'Language: ${movie.originalLanguage}',
                                               style: Font.subtitle2),
